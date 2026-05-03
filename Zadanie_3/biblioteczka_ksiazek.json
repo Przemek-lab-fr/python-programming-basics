@@ -1,0 +1,14 @@
+[
+    {
+        "tytul": "aaaaa",
+        "autor": "sssss",
+        "gatunek": "wwwww",
+        "status": "czytam"
+    },
+    {
+        "tytul": "cyberbezpieczenstwo",
+        "autor": "jan kowalski",
+        "gatunek": "naukowa",
+        "status": "przeczytana"
+    }
+]
