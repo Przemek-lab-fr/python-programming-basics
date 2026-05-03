@@ -2,57 +2,81 @@ import json
 from pathlib import Path
 
 FOLDER_PROGRAMU = Path(__file__).parent
-NAZWA_PLIKU = FOLDER_PROGRAMU / "todo.json"
+NAZWA_PLIKU = FOLDER_PROGRAMU / "planer_wyjsc.json"
 
-STATUSY = ["do zrobienia", "w trakcie", "zrobione"]
+MIEJSCA = ("restauracja", "kino", "dom", "park", "kawiarnia", "klub", "inne")
+STATUSY = ("planowane", "odbyło się", "odwołane")
 
 
-def dodaj_zadanie(lista, nazwa, opis):
-    zadanie = {
+def dodaj_wydarzenie(planer, nazwa, data, miejsce, zaproszeni):
+    if nazwa == "":
+        print("Błąd: nazwa wydarzenia nie może być pusta.")
+        return
+
+    if data == "":
+        print("Błąd: data nie może być pusta.")
+        return
+
+    if miejsce not in MIEJSCA:
+        print("Błąd: nieprawidłowy typ miejsca.")
+        print(f"Dostępne miejsca: {MIEJSCA}")
+        return
+
+    wydarzenie = {
         "nazwa": nazwa,
-        "opis": opis,
-        "status": "do zrobienia"
+        "data": data,
+        "miejsce": miejsce,
+        "zaproszeni": zaproszeni,
+        "status": "planowane"
     }
-    lista.append(zadanie)
-    print("Dodano zadanie.")
+
+    planer.append(wydarzenie)
+    print("Dodano wydarzenie.")
 
 
-def wyswietl_zadania(lista):
-    if len(lista) == 0:
-        print("Brak zadań.")
-        return
-
-    for i, zadanie in enumerate(lista, start=1):
-        print(f"{i}. {zadanie['nazwa']} - {zadanie['status']}")
-        print(f"   Opis: {zadanie['opis']}")
-
-
-def zmien_status(lista, indeks, nowy_status):
-    if indeks < 0 or indeks >= len(lista):
-        print("Błąd: nieprawidłowy numer zadania.")
-        return
-
+def zmien_status(planer, nazwa, nowy_status):
     if nowy_status not in STATUSY:
         print("Błąd: nieprawidłowy status.")
+        print(f"Dostępne statusy: {STATUSY}")
         return
 
-    lista[indeks]["status"] = nowy_status
-    print("Zmieniono status.")
+    for wydarzenie in planer:
+        if wydarzenie["nazwa"].lower() == nazwa.lower():
+            wydarzenie["status"] = nowy_status
+            print("Zmieniono status wydarzenia.")
+            return
+
+    print("Nie znaleziono wydarzenia o podanej nazwie.")
 
 
-def usun_zadanie(lista, indeks):
-    if indeks < 0 or indeks >= len(lista):
-        print("Błąd: nieprawidłowy numer zadania.")
+def wyswietl_planer(planer, status=None):
+    if len(planer) == 0:
+        print("Brak wydarzeń.")
         return
 
-    usuniete = lista.pop(indeks)
-    print(f"Usunięto zadanie: {usuniete['nazwa']}")
+    znaleziono = False
+
+    for wydarzenie in planer:
+        if status is not None and wydarzenie["status"] != status:
+            continue
+
+        print(
+            f"Nazwa: {wydarzenie['nazwa']}, "
+            f"Data: {wydarzenie['data']}, "
+            f"Miejsce: {wydarzenie['miejsce']}, "
+            f"Zaproszeni: {wydarzenie['zaproszeni']}, "
+            f"Status: {wydarzenie['status']}"
+        )
+        znaleziono = True
+
+    if not znaleziono:
+        print("Brak wydarzeń o wybranym statusie.")
 
 
-def zapisz_plik(lista, nazwa_pliku):
+def zapisz_plik(planer, nazwa_pliku):
     with open(nazwa_pliku, "w", encoding="utf-8") as plik:
-        json.dump(lista, plik, indent=4, ensure_ascii=False)
-    print("Zapisano dane.")
+        json.dump(planer, plik, indent=4, ensure_ascii=False)
+    print("Dane zapisane do pliku.")
 
 
 def wczytaj_plik(nazwa_pliku):
@@ -66,55 +90,54 @@ def wczytaj_plik(nazwa_pliku):
 
 
 def main():
-    lista = wczytaj_plik(NAZWA_PLIKU)
+    planer = wczytaj_plik(NAZWA_PLIKU)
 
     while True:
-        print("\n=== TODO LIST ===")
-        print("1. Dodaj zadanie")
-        print("2. Lista zadań")
-        print("3. Zmień status")
-        print("4. Usuń zadanie")
+        print("\n=== PLANER WYJŚĆ ===")
+        print("1. Dodaj wydarzenie")
+        print("2. Zmień status wydarzenia")
+        print("3. Lista wydarzeń")
         print("0. Zapisz i wyjdź")
 
         wybor = input("Wybierz opcję: ")
 
         if wybor == "1":
-            nazwa = input("Nazwa zadania: ")
-            opis = input("Opis: ")
-            dodaj_zadanie(lista, nazwa, opis)
+            nazwa = input("Podaj nazwę wydarzenia: ")
+            data = input("Podaj datę: ")
+
+            print(f"Dostępne miejsca: {MIEJSCA}")
+            miejsce = input("Podaj miejsce: ")
+
+            zaproszeni = input("Podaj zaproszone osoby: ")
+
+            dodaj_wydarzenie(planer, nazwa, data, miejsce, zaproszeni)
 
         elif wybor == "2":
-            wyswietl_zadania(lista)
+            nazwa = input("Podaj nazwę wydarzenia: ")
+
+            print(f"Dostępne statusy: {STATUSY}")
+            nowy_status = input("Podaj nowy status: ")
+
+            zmien_status(planer, nazwa, nowy_status)
 
         elif wybor == "3":
-            wyswietl_zadania(lista)
+            print("1. Wszystkie wydarzenia")
+            print("2. Filtruj po statusie")
+            podwybor = input("Wybierz opcję: ")
 
-            try:
-                indeks = int(input("Numer zadania: ")) - 1
-            except ValueError:
-                print("Błąd: wpisz liczbę.")
-                continue
+            if podwybor == "1":
+                wyswietl_planer(planer)
 
-            print("Dostępne statusy:")
-            for s in STATUSY:
-                print("-", s)
+            elif podwybor == "2":
+                print(f"Dostępne statusy: {STATUSY}")
+                status = input("Podaj status: ")
+                wyswietl_planer(planer, status)
 
-            nowy_status = input("Nowy status: ")
-            zmien_status(lista, indeks, nowy_status)
-
-        elif wybor == "4":
-            wyswietl_zadania(lista)
-
-            try:
-                indeks = int(input("Numer zadania do usunięcia: ")) - 1
-            except ValueError:
-                print("Błąd: wpisz liczbę.")
-                continue
-
-            usun_zadanie(lista, indeks)
+            else:
+                print("Nieprawidłowa opcja.")
 
         elif wybor == "0":
-            zapisz_plik(lista, NAZWA_PLIKU)
+            zapisz_plik(planer, NAZWA_PLIKU)
             print("Koniec programu.")
             break
 
