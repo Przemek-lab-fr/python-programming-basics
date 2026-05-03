@@ -1,0 +1,12 @@
+[
+    {
+        "tresc": "Nauczyć sie kodowania",
+        "priorytet": "wysoki",
+        "wykonane": true
+    },
+    {
+        "tresc": "naucz sie GIT",
+        "priorytet": "wysoki",
+        "wykonane": false
+    }
+]
